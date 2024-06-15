@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import JsonEditor from "./components/JsonEditor";
+
 import { transformJSXToJSON } from "./utilities/JSXToJSONTransformer";
 import { transformJSONToJSX } from "./utilities/JSONToJSXTransformer";
+import JsonEditor from "./components/JsonEditor.tsx";
 
-const App: React.FC = () => {
+const App = () => {
   const [jsx, setJSX] = useState<string>(`
     <Grid container spacing={2}>
       <Grid item xs={12}>
-        <Typography variant="h1">Hello World</Typography>
+        <Typography variant="h4">JSON to JSX</Typography>
       </Grid>
     </Grid>
   `);
@@ -19,40 +20,38 @@ const App: React.FC = () => {
   const preventJsxUpdate = useRef(false);
 
   useEffect(() => {
+    if (preventJsonUpdate.current) {
+      preventJsonUpdate.current = false;
+      return;
+    }
     try {
-      if (preventJsonUpdate.current) {
-        preventJsonUpdate.current = false;
-        return;
-      }
-      preventJsxUpdate.current = true;
       setJson(transformJSXToJSON(jsx));
       setError("");
     } catch (e: unknown) {
-      preventJsxUpdate.current = false;
       setError(e);
     }
   }, [jsx]);
 
   useEffect(() => {
+    if (preventJsxUpdate.current) {
+      preventJsxUpdate.current = false;
+      return;
+    }
     try {
-      if (preventJsxUpdate.current) {
-        preventJsxUpdate.current = false;
-        return;
-      }
-      preventJsonUpdate.current = true;
       setJSX(transformJSONToJSX(json));
       setError("");
     } catch (e) {
-      preventJsonUpdate.current = false;
       setError(e);
     }
   }, [json]);
 
   const handleJSXChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    preventJsxUpdate.current = true;
     setJSX(e.target.value);
   };
 
   const handleJSONChange = (newJson: string) => {
+    preventJsonUpdate.current = true;
     setJson(newJson);
   };
 
@@ -76,14 +75,15 @@ const App: React.FC = () => {
         <textarea
           value={jsx}
           onChange={handleJSXChange}
-          style={{ flex: 2, padding: "10px", fontSize: "12px" }}
+          style={{
+            flex: 2,
+            padding: "10px",
+            fontSize: "12px",
+            resize: "none",
+          }}
         />
         <div style={{ flex: 3, width: "100%", overflow: "scroll" }}>
-          <JsonEditor
-            key={Math.random()}
-            json={json}
-            setJson={handleJSONChange}
-          />
+          <JsonEditor json={json} setJson={handleJSONChange} />
         </div>
       </div>
       <div
@@ -96,7 +96,25 @@ const App: React.FC = () => {
       >
         <textarea
           value={error as string}
-          style={{ flex: 1, padding: "10px", fontSize: "16px" }}
+          style={{
+            flex: 2,
+            padding: "10px",
+            fontSize: "12px",
+            resize: "none",
+          }}
+          readOnly
+        />
+        <textarea
+          value={JSON.stringify(json, null, 2)
+            .replace(/\n/g, "\\n")
+            .replace(/\t/g, "\\t")
+            .replace(/"/g, '\\"')}
+          style={{
+            flex: 3,
+            padding: "10px",
+            fontSize: "12px",
+            resize: "none",
+          }}
           readOnly
         />
       </div>

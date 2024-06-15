@@ -9,13 +9,13 @@ interface JsonEditorProps {
 
 const JsonEditor: React.FC<JsonEditorProps> = ({ json, setJson }) => {
   return (
-    <div>
+    <div style={{ position: "relative" }}>
       <JSONInput
         width={"100%"}
         id="json-editor"
         placeholder={json}
         locale={locale}
-        onBlur={(e: Record<string, string>) => setJson(e.jsObject)}
+        onBlur={(e) => setJson(e.jsObject)}
       />
     </div>
   );
